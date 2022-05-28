@@ -72,9 +72,11 @@ def get_dataframe_average():
 
 
 def create_directory(path):
-    isExist = os.path.exists(path)
+    path_script = os.path.dirname(os.path.abspath(__file__))
+    print(path_script)
+    isExist = os.path.exists(path_script + '/' + path)
     if not isExist:
-        os.makedirs(path)
+        os.makedirs(path_script + '/' + path)
         print("The new directory is created!")
 
 

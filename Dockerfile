@@ -36,13 +36,9 @@ RUN touch /var/log/cron.log
 
 RUN chmod 0644 /var/log/cron.log
 
-RUN (crontab -l ; echo "* * * * * echo "Hello world" >> /var/log/cron.log") | crontab
-
 RUN (crontab -l ; echo "*/5 * * * * /usr/bin/sh /root/cron.sh >> /var/log/cron.log") | crontab
 
 RUN mkdir -p /var/log/app
-
-VOLUME /var/log
 
 WORKDIR /usr/app/src
 
