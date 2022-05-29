@@ -36,13 +36,17 @@ RUN touch /var/log/cron.log
 
 RUN chmod 0644 /var/log/cron.log
 
-RUN (crontab -l ; echo "*/5 * * * * /usr/bin/sh /root/cron.sh >> /var/log/cron.log") | crontab
+RUN (crontab -l ; echo "* */1 * * * /usr/bin/sh /root/cron.sh >> /var/log/cron.log") | crontab
 
 RUN mkdir -p /var/log/app
 
 WORKDIR /usr/app/src
 
+RUN mkdir -p data_municipios
+
 COPY app.py ./
+
+COPY data_municipios ./data_municipios/
 
 COPY requirements.txt ./
 

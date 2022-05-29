@@ -1,81 +1,63 @@
 
-$ docker rm -vf $(docker ps -aq)
+- Se creará un contenedor con el estado activo (up), este contenedor tiene un cron que cada 1 hora ejecuta un script python
 
-$ docker rmi -f $(docker images -aq) 
+- El script realiza lo siguiente:
 
-$ yes | docker image prune --all 
+   A través de la API obtiene los datos del servicio de clima 
+   
+		(Cumplimiento de punto 1: Consumir cada hora del servicio)
+   
+   La infomación que obtiene cada hora lo almacena en un archivo con extensión CSV dentro de la "data"  
+   
+   El formato de los archivos generados es: YYYYmmdd_HH.csv
+   
+             YYYY 	representa el año
+			 mm 	representa el mes
+			 dd     representa el día
+			 HH		representa la hora (formato 24 horas)
+			
+		(Cumplimiento de punto 2: Almacenar información historica/actual)
+			 
+	Se unen los resultados de las dos ultimas horas (correspondiente a los 2 ultimos CSV's), y se promedian las temperaturas máximas y mínimas agrupadas por el municipio 
+	
+		(Cumplimiento de punto 3: tabla por municipio de promedios de temperaturas)
 
-$ docker image prune --all --force
+     Para dejar en evidencia el punto 3 se almacena en un archivo con extensión CSV dentro de la "avg"
+	 
+	 Cuando se tiene el resultado de los promedios de las dos ultimas horas por municipio, se ha realizado un left join con la ultima actualizacion de archivo dentro la carpeta que  
+	 me compartieron "data_municipios", esto lo realizo buscando buscando la fecha más reciente ya que los nombres de las carpetas estan con una nomenclatura de tipo fecha,
+	 He tomado como campo de union "idmun" (Id de estado) e "ides" (Id de municipio) con las columnas de los archivos "Cve_Ent" (Id Estado) "Cve_Mun" (Id Municipio) 
+	 El resultado de esto se deja en una carpeta llamada "current" 
+	 
+	    (Cumplimiento de punto 4:  Se une la tabla por municipio de temperaturas con el último archivo )
 
-$ yes | docker system prune -a
+El repositorio esta en github de acceso publico
 
-$ yes | docker container prune
+		https://github.com/jamirhuamancampos/reto_dd360
+		
+		Para descargar:
 
-$ yes | docker image prune 
+		$ git clone -b main https://github.com/jamirhuamancampos/reto_dd360
 
-$ docker images 
+		(Cumplimiento de punto 5)
 
-$ docker ps -a
+La solucion fue entregada con Docker y Docker Compose 
 
-$ cd /mnt/d/
+		(Cumplimiento de punto 6)
+		
+La cuenta con logs:
 
-$ mkdir reto_dd360
+		Los logs que se genereran son por hora en la carpeta: /var/logs/app/
 
-$ mkvirtualenv --python=/usr/bin/python3 reto_dd360
+		(Cumplimiento de punto 6)		
+		
+Forma de ejecución:
 
-$ cd reto_dd360
-
-$ touch app.py
-
-$ nano app.py
-
-# escribir nuestro codigo python
-
-$ touch requirements.txt	
-
-$ nano requirements.txt
-
-# escribir nuestros requerimientos
-
-$ pip install -r requirements.txt
-
-$ touch Dockerfile
-
-$ nano Dockerfile
-
-# escribir nuestro Dockerfile
-
-$ docker image build -t reto_dd360:latest .
-
-$ docker run reto_dd360:latest
-
-$ touch docker-compose.yml
-
-$ nano docker-compose.yml
-
-# escribir el archivo docker-compose.yml
-
-$ docker-compose up --build -d
-
-$ docker ps --format '{{.Names}}' --filter="ancestor=reto_dd360_python:latest"
-
-$ docker exec -i -t $(docker ps --format '{{.Names}}' --filter="ancestor=reto_dd360_python:latest") bash
-
-# salir del container de docker sin apagar
-"Ctrl + p" luego "Ctrl + q"
-
-# salir del container de docker sin apagar
-exit
-
-$ crontab -l
-
-$ service cron status
-
-$ crontab -e
-
-$ git init 
-$ git add .
-$ git commit -m "first commit"
-$ git branch -M main
-$ git remote add origin https://github.com/jamirhuamancampos/reto_dd360.git
-$ git push -u origin main
+	# se creará el contenedor que estara en modo activo (up)
+	$ docker-compose up --build -d
+	
+	# para ingresar al contenedor y verificar la carpeta de archivos (todo se crea dentro de la carpeta de la aplicacion: /usr/app/src)	
+	$ docker exec -i -t $(docker ps --format '{{.Names}}' --filter="ancestor=reto_dd360_python:latest") bash
+	
+	Si se desea ejecutar de forma manual y no esperar el resultado cada una hora
+	$ python3.9 /usr/app/src/app.py >> /var/log/app/$(date +'%Y-%m-%d-%H').log
